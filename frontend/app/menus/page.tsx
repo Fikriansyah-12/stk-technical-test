@@ -1,5 +1,5 @@
-"use client"
-import { LayoutGrid, ChevronDown } from "lucide-react";
+"use client";
+import { LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,10 +12,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MenuTree } from "@/components/menu/menuTree";
 import { MenuForm } from "@/components/menu/menuForm";
 import { useMenuStore } from "@/store/menuStore";
+import { useState } from "react";
 
 const Menus = () => {
-  const { selectedMenu, setSelectedMenu, menuItems, expandAll, collapseAll } = useMenuStore();
+  const { selectedMenu, setSelectedMenu, menuItems, expandAll, collapseAll } =
+    useMenuStore();
   const isMobile = useIsMobile();
+  const [activeButton, setActiveButton] = useState<"expand" | "collapse">(
+    "expand"
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,14 +30,20 @@ const Menus = () => {
             <span>Menu</span>
           </div>
           <div className="flex items-center gap-3">
-            <LayoutGrid className="h-6 w-6 text-primary" />
+            <div className="bg-blue-700 p-2 rounded-full">
+            <LayoutGrid className="h-6 w-6 text-white" />
+            </div>
             <h1 className="text-2xl font-semibold">Menus</h1>
           </div>
         </div>
       </div>
 
       <div className="p-6">
-        <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'}`}>
+        <div
+          className={`grid gap-6 ${
+            isMobile ? "grid-cols-1" : "lg:grid-cols-2"
+          }`}
+        >
           <div className="bg-card rounded-lg border">
             <div className="p-4 space-y-4">
               <div className="space-y-2">
@@ -42,36 +53,42 @@ const Menus = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="system management">system management</SelectItem>
+                    <SelectItem value="system management">
+                      system management
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex gap-2">
                 <Button
-                  variant="default"
+                  variant={activeButton === "expand" ? "default" : "outline"}
                   size="sm"
-                  onClick={expandAll}
+                  onClick={() => {
+                    expandAll();
+                    setActiveButton("expand");
+                  }}
                   className="rounded-full"
                 >
                   Expand All
                 </Button>
                 <Button
-                  variant="outline"
+                  variant={activeButton === "collapse" ? "default" : "outline"}
                   size="sm"
-                  onClick={collapseAll}
+                  onClick={() => {
+                    collapseAll();
+                    setActiveButton("collapse");
+                  }}
                   className="rounded-full"
                 >
                   Collapse All
                 </Button>
               </div>
-
               <div className="max-h-[600px] overflow-y-auto pr-2">
                 <MenuTree items={menuItems} />
               </div>
             </div>
           </div>
-
           <div className="bg-card rounded-lg border">
             <MenuForm />
           </div>
@@ -81,8 +98,12 @@ const Menus = () => {
   );
 };
 
-const Label = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <label className={className}>{children}</label>
-);
+const Label = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => <label className={className}>{children}</label>;
 
 export default Menus;

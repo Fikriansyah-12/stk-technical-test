@@ -52,7 +52,7 @@ export function MenuForm() {
         />
       </div>
 
-      <Button className="w-full rounded-full h-11">
+      <Button className="w-full rounded-full bg-blue-700 h-11">
         Save
       </Button>
     </div>
