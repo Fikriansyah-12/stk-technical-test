@@ -1,4 +1,5 @@
 "use client";
+
 import { LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,25 +14,22 @@ import { MenuTree } from "@/components/menu/menuTree";
 import { MenuForm } from "@/components/menu/menuForm";
 import { useMenuStore } from "@/store/menuStore";
 import { useState } from "react";
+import { Icon } from "@iconify/react";
 
 const Menus = () => {
   const { selectedMenu, setSelectedMenu, menuItems, expandAll, collapseAll } =
     useMenuStore();
   const isMobile = useIsMobile();
-  const [activeButton, setActiveButton] = useState<"expand" | "collapse">(
-    "expand"
-  );
+  const [activeButton, setActiveButton] =
+    useState<"expand" | "collapse">("expand");
 
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card">
         <div className="px-6 py-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
-            <span>Menu</span>
-          </div>
           <div className="flex items-center gap-3">
             <div className="bg-blue-700 p-2 rounded-full">
-            <LayoutGrid className="h-6 w-6 text-white" />
+              <LayoutGrid className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-2xl font-semibold">Menus</h1>
           </div>
@@ -50,7 +48,7 @@ const Menus = () => {
                 <Label className="text-sm text-muted-foreground">Menu</Label>
                 <Select value={selectedMenu} onValueChange={setSelectedMenu}>
                   <SelectTrigger className="bg-background">
-                    <SelectValue />
+                    <SelectValue placeholder="Select menu" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="system management">
@@ -84,11 +82,13 @@ const Menus = () => {
                   Collapse All
                 </Button>
               </div>
+
               <div className="max-h-[600px] overflow-y-auto pr-2">
                 <MenuTree items={menuItems} />
               </div>
             </div>
           </div>
+
           <div className="bg-card rounded-lg border">
             <MenuForm />
           </div>

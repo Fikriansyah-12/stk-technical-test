@@ -1,13 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import {
-  LayoutGrid,
-  FolderOpen,
-  FolderClosed,
-  PanelLeftClose,
-  PanelLeft,
-} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavLink } from "./Navlink";
 import { cn } from "@/lib/utils";
@@ -27,14 +20,14 @@ import {
 
 interface MenuGroup {
   title: string;
-  icon: "folder";
-  children: { title: string; url: string }[];
+  icon: string;
+  children: { title: string; url: string; icon:string }[];
 }
 
 interface SingleItem {
   title: string;
   url: string;
-  icon: "folder";
+  icon: string;
 }
 
 type MenuItem = MenuGroup | SingleItem;
@@ -44,14 +37,14 @@ const menuStructure: MenuItem[] = [
     title: "Systems",
     icon: "folder",
     children: [
-      { title: "System Code", url: "/system-code" },
-      { title: "Properties", url: "/properties" },
-      { title: "Menus", url: "/menus" },
-      { title: "API List", url: "/api-list" },
+      { title: "System Code", url: "/system-code", icon:"tabler:layout-2" },
+      { title: "Properties", url: "/properties", icon:"basil:layout-outline" },
+      { title: "Menus", url: "/menus", icon:"tabler:layout-2-filled" },
+      { title: "API List", url: "/api-list", icon:"basil:layout-outline" },
     ],
   },
-  { title: "Users & Group", url: "/users-group", icon: "folder" },
-  { title: "Competition", url: "/competition", icon: "folder" },
+  { title: "Users & Group", url: "/users-group", icon: "material-symbols:folder-outline" },
+  { title: "Competition", url: "/competition", icon: "material-symbols:folder-outline" },
 ];
 
 function isMenuGroup(item: MenuItem): item is MenuGroup {
@@ -82,7 +75,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0">
-      <SidebarContent className="bg-sidebar">
+      <SidebarContent>
         <div className="p-4 flex items-center justify-between border-b border-white/10">
           <div className="flex items-center">
             <div className="w-10 h-10 gap-2 rounded flex items-center justify-center flex-shrink-0">
@@ -110,8 +103,8 @@ export function AppSidebar() {
           <SidebarTrigger className="text-white hover:bg-white/10 rounded p-1">
             {open ? (
               <Icon icon="mdi:menu-open" className="!h-6 !w-6" />
-                   ) : (
-                     <Icon icon="mdi:menu-close" className="h-6 w-6 text-black" />
+            ) : (
+              <Icon icon="mdi:menu-close" className="!h-6 !w-6 text-black" />
             )}
           </SidebarTrigger>
         </div>
@@ -123,36 +116,39 @@ export function AppSidebar() {
                 if (isMenuGroup(item)) {
                   const isExpanded = expandedGroups.has(item.title);
                   return (
-                    <div key={item.title}>
+                    <div key={item.title} className="bg-white/10 p-1 rounded-lg gap-4">
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           onClick={() => toggleGroup(item.title)}
                           className="transition-all hover:bg-white/10 text-sidebar-foreground hover:text-white cursor-pointer"
                         >
                           {isExpanded ? (
-                            <FolderOpen className="h-4 w-4" />
+                            <Icon icon="material-symbols:folder" className="!h-5 !w-5" />
                           ) : (
-                            <FolderClosed className="h-4 w-4" />
+                            <Icon
+                              icon="material-symbols:folder-outline"
+                              className="!h-5 !w-5"
+                            />
                           )}
                           {open && <span>{item.title}</span>}
                         </SidebarMenuButton>
                       </SidebarMenuItem>
 
                       {isExpanded && open && (
-                        <div className="mt-1 ml-2 bg-white/10 rounded-lg p-1">
+                        <div className=" rounded-lg">
                           {item.children.map((child) => (
                             <SidebarMenuItem key={child.title}>
                               <SidebarMenuButton
                                 asChild
                                 className={cn(
-                                  "transition-all hover:bg-white/20",
+                                  "transition-all hover:bg-white/10",
                                   isActive(child.url)
-                                    ? "bg-white text-primary font-semibold rounded-full hover:bg-white"
+                                    ? "bg-white text-primary text-blue-600 font-semibold rounded-full hover:bg-white/80 hover:text-blue-600"
                                     : "text-sidebar-foreground hover:text-white"
                                 )}
                               >
                                 <NavLink href={child.url}>
-                                  <LayoutGrid className="h-4 w-4" />
+                                  <Icon icon={child.icon} className="!h-5 !w-5" />
                                   <span>{child.title}</span>
                                 </NavLink>
                               </SidebarMenuButton>
@@ -176,7 +172,7 @@ export function AppSidebar() {
                       )}
                     >
                       <NavLink href={item.url}>
-                        <FolderClosed className="h-4 w-4" />
+                        <Icon icon={item.icon} className="!h-5 !w-5" />
                         {open && <span>{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
