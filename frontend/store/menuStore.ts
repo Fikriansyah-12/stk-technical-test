@@ -52,13 +52,13 @@ const initialMenuData: MenuItem[] = [
                   {
                     id: "code-reg",
                     name: "Code Registration",
-                    depth: 4,
+                    depth: 0,
                     parentData: "System Code",
                   },
                   {
                     id: "code-reg-2",
                     name: "Code Registration - 2",
-                    depth: 4,
+                    depth: 0,
                     parentData: "System Code",
                   },
                 ],
