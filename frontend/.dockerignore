@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+.next
+out
+coverage
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Logs
+logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode
+.idea
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Cache
+.npm
+.cache

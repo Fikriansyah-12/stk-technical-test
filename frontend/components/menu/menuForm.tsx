@@ -24,8 +24,6 @@ export function MenuForm() {
 
   useEffect(() => {
     if (selectedItem) {
-      console.log("SELECTED ITEM", selectedItem);
-
       setTitle(selectedItem.name);
     } else {
       setTitle("");
