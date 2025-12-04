@@ -1,6 +1,20 @@
+"use client";
+
+import { useState, type MouseEvent } from "react";
 import { ChevronRight, ChevronDown, PlusIcon } from "lucide-react";
-import { MenuItem, useMenuStore } from "@/store/menuStore";
+import { useMenuStore } from "@/store/menuStore";
+import type { MenuItem } from "@/types/menu";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface MenuTreeProps {
   items: MenuItem[];
@@ -8,28 +22,56 @@ interface MenuTreeProps {
 }
 
 export function MenuTree({ items, level = 0 }: MenuTreeProps) {
-  const { expandedItems, toggleExpand, selectedItem, selectItem } = useMenuStore();
+  const { expandedItems, toggleExpand, selectedItem, selectItem, createItem } =
+    useMenuStore();
 
-  const renderItem = (item: MenuItem, depth: number, isLast: boolean = false) => {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [parentForCreate, setParentForCreate] = useState<MenuItem | null>(null);
+  const [newName, setNewName] = useState("");
+
+  const openCreateModal = (
+    e: MouseEvent<HTMLButtonElement>,
+    parent: MenuItem
+  ) => {
+    e.stopPropagation();
+    setParentForCreate(parent);
+    setNewName("");
+    setIsCreateOpen(true);
+  };
+
+  const handleConfirmCreate = async () => {
+    if (!parentForCreate) return;
+    if (!newName.trim()) return;
+
+    await createItem({
+      title: newName.trim(),
+      parentId: parentForCreate.id,
+    });
+
+    setIsCreateOpen(false);
+  };
+
+  const renderItem = (item: MenuItem, depth: number) => {
+    const children = item.children ?? [];
+    const hasChildren = children.length > 0;
     const isExpanded = expandedItems.has(item.id);
-    const hasChildren = item.children && item.children.length > 0;
     const isSelected = selectedItem?.id === item.id;
 
     return (
       <div key={item.id} className="select-none relative">
         {depth > 0 && (
-          <div 
+          <div
             className="absolute left-0 top-0 bottom-0 w-px bg-border"
             style={{ left: `${(depth - 1) * 24 + 8}px` }}
           />
         )}
-        
+
         {depth > 0 && (
-          <div 
+          <div
             className="absolute top-[18px] h-px bg-border"
-            style={{ 
+            style={{
               left: `${(depth - 1) * 24 + 8}px`,
-              width: '16px'
+              width: "16px",
             }}
           />
         )}
@@ -59,22 +101,23 @@ export function MenuTree({ items, level = 0 }: MenuTreeProps) {
               <div className="w-3.5 h-3.5" />
             )}
           </button>
-          
+
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="text-sm truncate">{item.name}</span>
-            {item.id === 'system-code' && (
-              <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full flex-shrink-0">
-                <PlusIcon className="w-4 h-4"/>
-              </span>
-            )}
+
+            <button
+              type="button"
+              onClick={(e) => openCreateModal(e, item)}
+              className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full flex items-center justify-center"
+            >
+              <PlusIcon className="w-3 h-3" />
+            </button>
           </div>
         </div>
-        
+
         {hasChildren && isExpanded && (
           <div className="relative">
-            {item.children!.map((child, index) => 
-              renderItem(child, depth + 1, index === item.children!.length - 1)
-            )}
+            {children.map((child) => renderItem(child, depth + 1))}
           </div>
         )}
       </div>
@@ -82,8 +125,58 @@ export function MenuTree({ items, level = 0 }: MenuTreeProps) {
   };
 
   return (
-    <div className="space-y-0">
-      {items.map((item, index) => renderItem(item, level, index === items.length - 1))}
-    </div>
+    <>
+      <div className="space-y-0">
+        {items.map((item) => renderItem(item, level))}
+      </div>
+
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Menu</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1">
+              <Label className="text-sm text-muted-foreground">Parent</Label>
+              <Input
+                value={parentForCreate?.name ?? "-"}
+                readOnly
+                className="bg-muted/50 border-0 text-sm"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-sm text-muted-foreground">Menu name</Label>
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="New menu name"
+                className="text-sm"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setIsCreateOpen(false)}
+              className="rounded-full"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmCreate}
+              className="rounded-full bg-blue-700"
+              disabled={!newName.trim()}
+            >
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

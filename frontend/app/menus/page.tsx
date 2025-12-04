@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, type ReactNode } from "react";
 import { LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,15 +14,27 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MenuTree } from "@/components/menu/menuTree";
 import { MenuForm } from "@/components/menu/menuForm";
 import { useMenuStore } from "@/store/menuStore";
-import { useState } from "react";
-import { Icon } from "@iconify/react";
 
 const Menus = () => {
-  const { selectedMenu, setSelectedMenu, menuItems, expandAll, collapseAll } =
-    useMenuStore();
+  const {
+    selectedMenu,
+    setSelectedMenu,
+    menuItems,
+    expandAll,
+    collapseAll,
+    fetchTree,
+    isLoading,
+    error,
+  } = useMenuStore();
+
   const isMobile = useIsMobile();
-  const [activeButton, setActiveButton] =
-    useState<"expand" | "collapse">("expand");
+  const [activeButton, setActiveButton] = useState<"expand" | "collapse">(
+    "expand"
+  );
+
+  useEffect(() => {
+    fetchTree();
+  }, [fetchTree]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,6 +50,8 @@ const Menus = () => {
       </div>
 
       <div className="p-6">
+        {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+
         <div
           className={`grid gap-6 ${
             isMobile ? "grid-cols-1" : "lg:grid-cols-2"
@@ -67,6 +82,7 @@ const Menus = () => {
                     setActiveButton("expand");
                   }}
                   className="rounded-full"
+                  disabled={isLoading}
                 >
                   Expand All
                 </Button>
@@ -78,13 +94,20 @@ const Menus = () => {
                     setActiveButton("collapse");
                   }}
                   className="rounded-full"
+                  disabled={isLoading}
                 >
                   Collapse All
                 </Button>
               </div>
 
               <div className="max-h-[600px] overflow-y-auto pr-2">
-                <MenuTree items={menuItems} />
+                {isLoading ? (
+                  <p className="text-sm text-muted-foreground">
+                    Loading menus...
+                  </p>
+                ) : (
+                  <MenuTree items={menuItems} />
+                )}
               </div>
             </div>
           </div>
@@ -102,7 +125,7 @@ const Label = ({
   children,
   className,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) => <label className={className}>{children}</label>;
 

@@ -1,200 +1,190 @@
-import { create } from "zustand";
+'use client';
 
-export interface MenuItem {
-  id: string;
-  name: string;
-  depth: number;
-  parentData: string | null;
-  children?: MenuItem[];
-  expanded?: boolean;
-}
+import { create } from 'zustand';
+import {
+  apiGet,
+  apiPost,
+  apiPut,
+  apiDelete,
+  apiPatch,
+} from '@/lib/api';
+import type {
+  ApiMenuItem,
+  MenuItem,
+  CreateMenuPayload,
+  UpdateMenuPayload,
+  MoveMenuPayload,
+  ReorderMenuPayload,
+} from '@/types/menu';
 
 interface MenuState {
   selectedMenu: string;
   setSelectedMenu: (menu: string) => void;
+
   menuItems: MenuItem[];
   expandedItems: Set<string>;
   toggleExpand: (id: string) => void;
   expandAll: () => void;
   collapseAll: () => void;
+
   selectedItem: MenuItem | null;
   selectItem: (item: MenuItem | null) => void;
+
+  isLoading: boolean;
+  error: string | null;
+
+  fetchTree: () => Promise<void>;
+  createItem: (payload: CreateMenuPayload) => Promise<void>;
+  updateItem: (id: string, payload: UpdateMenuPayload) => Promise<void>;
+  deleteItem: (id: string) => Promise<void>;
+  moveItem: (id: string, payload: MoveMenuPayload) => Promise<void>;
+  reorderItem: (id: string, payload: ReorderMenuPayload) => Promise<void>;
 }
 
-const initialMenuData: MenuItem[] = [
-  {
-    id: "system-management",
-    name: "system.management",
-    depth: 0,
-    parentData: null,
-    expanded: true,
-    children: [
-      {
-        id: "system-management-1",
-        name: "System Management",
-        depth: 1,
-        parentData: "system.management",
-        expanded: true,
-        children: [
-          {
-            id: "systems",
-            name: "Systems",
-            depth: 2,
-            parentData: "System Management",
-            expanded: true,
-            children: [
-              {
-                id: "system-code",
-                name: "System Code",
-                depth: 3,
-                parentData: "Systems",
-                children: [
-                  {
-                    id: "code-reg",
-                    name: "Code Registration",
-                    depth: 0,
-                    parentData: "System Code",
-                  },
-                  {
-                    id: "code-reg-2",
-                    name: "Code Registration - 2",
-                    depth: 0,
-                    parentData: "System Code",
-                  },
-                ],
-              },
-              {
-                id: "properties",
-                name: "Properties",
-                depth: 3,
-                parentData: "Systems",
-              },
-              {
-                id: "menus",
-                name: "Menus",
-                depth: 3,
-                parentData: "Systems",
-                children: [
-                  {
-                    id: "menu-reg",
-                    name: "Menu Registration",
-                    depth: 4,
-                    parentData: "Menus",
-                  },
-                ],
-              },
-              {
-                id: "api-list",
-                name: "API List",
-                depth: 3,
-                parentData: "Systems",
-                children: [
-                  {
-                    id: "api-reg",
-                    name: "API Registration",
-                    depth: 4,
-                    parentData: "API List",
-                  },
-                  {
-                    id: "api-edit",
-                    name: "API Edit",
-                    depth: 4,
-                    parentData: "API List",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            id: "users-groups",
-            name: "Users & Groups",
-            depth: 2,
-            parentData: "System Management",
-            children: [
-              {
-                id: "users",
-                name: "Users",
-                depth: 3,
-                parentData: "Users & Groups",
-                children: [
-                  {
-                    id: "user-reg",
-                    name: "User Account Registration",
-                    depth: 4,
-                    parentData: "Users",
-                  },
-                ],
-              },
-              {
-                id: "groups",
-                name: "Groups",
-                depth: 3,
-                parentData: "Users & Groups",
-                children: [
-                  {
-                    id: "group-reg",
-                    name: "User Group Registration",
-                    depth: 4,
-                    parentData: "Groups",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            id: "system-log",
-            name: "시스템 슬럼",
-            depth: 2,
-            parentData: "System Management",
-            children: [
-              {
-                id: "system-log-detail",
-                name: "시스템 슬럼 상세",
-                depth: 3,
-                parentData: "시스템 슬럼",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-];
+const mapApiToMenuItem = (
+  node: ApiMenuItem,
+  parentName: string | null = null,
+): MenuItem => ({
+  id: node.id,
+  name: node.title,
+  order: node.order,
+  parentId: node.parentId,
+  parentData: parentName,
+  expanded: true,
+  children: node.children?.map((child) =>
+    mapApiToMenuItem(child, node.title),
+  ),
+});
+
+
+const collectAllIds = (items: MenuItem[]): string[] =>
+  items.reduce<string[]>((acc, item) => {
+    acc.push(item.id);
+    if (item.children) acc.push(...collectAllIds(item.children));
+    return acc;
+  }, []);
 
 export const useMenuStore = create<MenuState>((set, get) => ({
-  selectedMenu: "system management",
+  selectedMenu: 'system management',
   setSelectedMenu: (menu) => set({ selectedMenu: menu }),
-  menuItems: initialMenuData,
-  expandedItems: new Set([
-    "system-management",
-    "system-management-1",
-    "systems",
-    "system-code",
-  ]),
+
+  menuItems: [],
+  expandedItems: new Set(),
+  selectedItem: null,
+
+  isLoading: false,
+  error: null,
+
   toggleExpand: (id) =>
     set((state) => {
-      const newExpanded = new Set(state.expandedItems);
-      if (newExpanded.has(id)) {
-        newExpanded.delete(id);
-      } else {
-        newExpanded.add(id);
-      }
-      return { expandedItems: newExpanded };
+      const expanded = new Set(state.expandedItems);
+      if (expanded.has(id)) expanded.delete(id);
+      else expanded.add(id);
+      return { expandedItems: expanded };
     }),
+
   expandAll: () => {
-    const getAllIds = (items: MenuItem[]): string[] => {
-      return items.reduce((acc: string[], item) => {
-        acc.push(item.id);
-        if (item.children) {
-          acc.push(...getAllIds(item.children));
-        }
-        return acc;
-      }, []);
-    };
-    const allIds = getAllIds(get().menuItems);
+    const allIds = collectAllIds(get().menuItems);
     set({ expandedItems: new Set(allIds) });
   },
+
   collapseAll: () => set({ expandedItems: new Set() }),
-  selectedItem: null,
+
   selectItem: (item) => set({ selectedItem: item }),
+
+
+  async fetchTree() {
+    try {
+      set({ isLoading: true, error: null });
+      const data = await apiGet<ApiMenuItem[]>('/api/menus');
+      const mapped = data.map((root) => mapApiToMenuItem(root, null));
+      const allIds = collectAllIds(mapped);
+
+      set({
+        menuItems: mapped,
+        expandedItems: new Set(allIds),
+        isLoading: false,
+      });
+    } catch (err: any) {
+      set({
+        error: err?.message ?? 'Failed to fetch menus',
+        isLoading: false,
+      });
+    }
+  },
+
+  async createItem(payload) {
+    try {
+      set({ isLoading: true, error: null });
+      await apiPost('/api/menus', {
+        title: payload.title,
+        parentId: payload.parentId ?? null,
+      });
+      await get().fetchTree();
+    } catch (err: any) {
+      set({
+        error: err?.message ?? 'Failed to create menu',
+        isLoading: false,
+      });
+    }
+  },
+
+  async updateItem(id, payload) {
+    try {
+      set({ isLoading: true, error: null });
+      await apiPut(`/api/menus/${id}`, {
+        title: payload.title,
+        parentId: payload.parentId ?? null,
+      });
+      await get().fetchTree();
+    } catch (err: any) {
+      set({
+        error: err?.message ?? 'Failed to update menu',
+        isLoading: false,
+      });
+    }
+  },
+
+  async deleteItem(id) {
+    try {
+      set({ isLoading: true, error: null });
+      await apiDelete(`/api/menus/${id}`);
+      await get().fetchTree();
+    } catch (err: any) {
+      set({
+        error: err?.message ?? 'Failed to delete menu',
+        isLoading: false,
+      });
+    }
+  },
+
+  async moveItem(id, payload) {
+    try {
+      set({ isLoading: true, error: null });
+      await apiPatch(`/api/menus/${id}/move`, {
+        newParentId: payload.newParentId,
+      });
+      await get().fetchTree();
+    } catch (err: any) {
+      set({
+        error: err?.message ?? 'Failed to move menu',
+        isLoading: false,
+      });
+    }
+  },
+
+  async reorderItem(id, payload) {
+    try {
+      set({ isLoading: true, error: null });
+      await apiPatch(`/api/menus/${id}/reorder`, {
+        newOrder: payload.newOrder,
+      });
+      await get().fetchTree();
+    } catch (err: any) {
+      set({
+        error: err?.message ?? 'Failed to reorder menu',
+        isLoading: false,
+      });
+    }
+  },
 }));
