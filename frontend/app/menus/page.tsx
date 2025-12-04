@@ -14,7 +14,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MenuTree } from "@/components/menu/menuTree";
 import { MenuForm } from "@/components/menu/menuForm";
 import { useMenuStore } from "@/store/menuStore";
-
+import { useToast } from "@/hooks/useToast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 const Menus = () => {
   const {
     selectedMenu,
@@ -28,6 +30,7 @@ const Menus = () => {
   } = useMenuStore();
 
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [activeButton, setActiveButton] = useState<"expand" | "collapse">(
     "expand"
   );
@@ -35,6 +38,15 @@ const Menus = () => {
   useEffect(() => {
     fetchTree();
   }, [fetchTree]);
+  useEffect(() => {
+    if (!error) return;
+
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: error,
+    });
+  }, [error, toast]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,8 +62,14 @@ const Menus = () => {
       </div>
 
       <div className="p-6">
-        {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
-
+        {error && (
+          <div className="mb-2 w-1/2">
+            <Alert className="bg-red-500/30" variant="destructive">
+              <AlertTitle className="">Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <div
           className={`grid gap-6 ${
             isMobile ? "grid-cols-1" : "lg:grid-cols-2"
@@ -102,9 +120,11 @@ const Menus = () => {
 
               <div className="max-h-[600px] overflow-y-auto pr-2">
                 {isLoading ? (
-                  <p className="text-sm text-muted-foreground">
-                    Loading menus...
-                  </p>
+                  <div className="space-y-2">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <Skeleton key={i} className="h-6 w-full rounded" />
+                    ))}
+                  </div>
                 ) : (
                   <MenuTree items={menuItems} />
                 )}

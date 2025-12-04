@@ -69,11 +69,9 @@ const collectAllIds = (items: MenuItem[]): string[] =>
 export const useMenuStore = create<MenuState>((set, get) => ({
   selectedMenu: 'system management',
   setSelectedMenu: (menu) => set({ selectedMenu: menu }),
-
   menuItems: [],
   expandedItems: new Set(),
   selectedItem: null,
-
   isLoading: false,
   error: null,
 
@@ -91,15 +89,12 @@ export const useMenuStore = create<MenuState>((set, get) => ({
   },
 
   collapseAll: () => set({ expandedItems: new Set() }),
-
   selectItem: (item) => set({ selectedItem: item }),
-
 
   async fetchTree() {
   try {
     set({ isLoading: true, error: null });
     const data = await apiGet<ApiMenuItem[]>('/api/menus');
-
     const mapped = data.map((root) => mapApiToMenuItem(root, null, 1));
     const allIds = collectAllIds(mapped);
 
@@ -115,7 +110,6 @@ export const useMenuStore = create<MenuState>((set, get) => ({
     });
   }
 },
-
 
   async createItem(payload) {
     try {

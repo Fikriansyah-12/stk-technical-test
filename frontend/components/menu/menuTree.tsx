@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, type MouseEvent, type DragEvent } from "react";
+import {
+  useState,
+  useMemo,
+  type MouseEvent,
+  type DragEvent,
+} from "react";
 import { ChevronRight, ChevronDown, PlusIcon } from "lucide-react";
 import { useMenuStore } from "@/store/menuStore";
 import type { MenuItem } from "@/types/menu";
@@ -36,10 +41,11 @@ export function MenuTree({ items, level = 0 }: MenuTreeProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [parentForCreate, setParentForCreate] = useState<MenuItem | null>(null);
   const [newName, setNewName] = useState("");
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
+
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  const [search, setSearch] = useState("");
 
   const openCreateModal = (
     e: MouseEvent<HTMLButtonElement>,
@@ -161,6 +167,38 @@ export function MenuTree({ items, level = 0 }: MenuTreeProps) {
     setDragOverId(null);
   };
 
+  const filterTree = (nodes: MenuItem[], query: string): MenuItem[] => {
+    const trimmed = query.trim();
+    if (!trimmed) return nodes;
+
+    const q = trimmed.toLowerCase();
+
+    const walk = (list: MenuItem[]): MenuItem[] => {
+      const result: MenuItem[] = [];
+
+      for (const item of list) {
+        const matchesSelf = item.name.toLowerCase().includes(q);
+        const filteredChildren = item.children ? walk(item.children) : [];
+
+        if (matchesSelf || filteredChildren.length > 0) {
+          result.push({
+            ...item,
+            children: filteredChildren,
+          });
+        }
+      }
+
+      return result;
+    };
+
+    return walk(nodes);
+  };
+
+  const visibleItems = useMemo(
+    () => filterTree(items, search),
+    [items, search]
+  );
+
   const renderItem = (item: MenuItem, depth: number) => {
     const children = item.children ?? [];
     const hasChildren = children.length > 0;
@@ -246,8 +284,17 @@ export function MenuTree({ items, level = 0 }: MenuTreeProps) {
 
   return (
     <>
+      <div className="mb-3 px-1 mt-2">
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search menu..."
+          className="h-8 text-xs"
+        />
+      </div>
+
       <div className="space-y-0">
-        {items.map((item) => renderItem(item, level))}
+        {visibleItems.map((item) => renderItem(item, level))}
       </div>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -267,7 +314,9 @@ export function MenuTree({ items, level = 0 }: MenuTreeProps) {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-sm text-muted-foreground">Menu name</Label>
+              <Label className="text-sm text-muted-foreground">
+                Menu name
+              </Label>
               <Input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -297,7 +346,6 @@ export function MenuTree({ items, level = 0 }: MenuTreeProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </>
   );
 }

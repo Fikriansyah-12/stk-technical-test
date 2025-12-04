@@ -18,7 +18,7 @@ import {
 import { Save, Trash } from "lucide-react";
 
 export function MenuForm() {
-  const { selectedItem, updateItem, deleteItem } = useMenuStore();
+  const { selectedItem, updateItem, deleteItem,isLoading } = useMenuStore();
   const [title, setTitle] = useState("");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -105,10 +105,10 @@ export function MenuForm() {
           className="w-full rounded-full bg-blue-700 h-11"
           type="button"
           onClick={handleSave}
-          disabled={!title.trim()}
+          disabled={!title.trim() || isLoading}
         >
           <Save className="w-10 h-10" />
-          Save
+          {isLoading ? "Saving...":"Save"}
         </Button>
 
         <Button
@@ -116,6 +116,7 @@ export function MenuForm() {
           variant="outline"
           className="rounded-full bg-red-500 text-white hover:bg-red-600 h-11"
           onClick={handleDeleteClick}
+          disabled={isLoading}
         >
           <Trash className="w-10 h-10" />
           Delete
