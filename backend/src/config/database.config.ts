@@ -5,9 +5,9 @@ export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOption
       type: 'postgres',
       host: configService.get<string>("DB_HOST"),
       port: configService.get<number>("DB_PORT"),
-      username: configService.get<string>("DB_USER"),
+      username: configService.get<string>("DB_USER") ?? 'postgres',
       password: configService.get<string>("DB_PASSWORD") ?? '1234567',
-      database: configService.get<string>("DB_NAME") ?? 'menu_tree_db',
+      database: configService.get<string>("DB_NAME") ?? 'db',
       autoLoadEntities: true,
       ssl: configService.get<string>('DB_SSL', 'false') === 'true'
     })
