@@ -13,6 +13,7 @@ export interface MenuItem {
   order: number;
   parentId: string | null;
   parentData: string | null;
+    depth?: number;
   expanded?: boolean;
   children?: MenuItem[];
 }

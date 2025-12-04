@@ -44,18 +44,19 @@ interface MenuState {
 const mapApiToMenuItem = (
   node: ApiMenuItem,
   parentName: string | null = null,
+  depth = 1
 ): MenuItem => ({
   id: node.id,
   name: node.title,
   order: node.order,
   parentId: node.parentId,
   parentData: parentName,
+  depth,
   expanded: true,
   children: node.children?.map((child) =>
-    mapApiToMenuItem(child, node.title),
+    mapApiToMenuItem(child, node.title, depth + 1)
   ),
 });
-
 
 const collectAllIds = (items: MenuItem[]): string[] =>
   items.reduce<string[]>((acc, item) => {
@@ -63,6 +64,7 @@ const collectAllIds = (items: MenuItem[]): string[] =>
     if (item.children) acc.push(...collectAllIds(item.children));
     return acc;
   }, []);
+
 
 export const useMenuStore = create<MenuState>((set, get) => ({
   selectedMenu: 'system management',
@@ -94,24 +96,26 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 
 
   async fetchTree() {
-    try {
-      set({ isLoading: true, error: null });
-      const data = await apiGet<ApiMenuItem[]>('/api/menus');
-      const mapped = data.map((root) => mapApiToMenuItem(root, null));
-      const allIds = collectAllIds(mapped);
+  try {
+    set({ isLoading: true, error: null });
+    const data = await apiGet<ApiMenuItem[]>('/api/menus');
 
-      set({
-        menuItems: mapped,
-        expandedItems: new Set(allIds),
-        isLoading: false,
-      });
-    } catch (err: any) {
-      set({
-        error: err?.message ?? 'Failed to fetch menus',
-        isLoading: false,
-      });
-    }
-  },
+    const mapped = data.map((root) => mapApiToMenuItem(root, null, 1));
+    const allIds = collectAllIds(mapped);
+
+    set({
+      menuItems: mapped,
+      expandedItems: new Set(allIds),
+      isLoading: false,
+    });
+  } catch (err: any) {
+    set({
+      error: err?.message ?? 'Failed to fetch menus',
+      isLoading: false,
+    });
+  }
+},
+
 
   async createItem(payload) {
     try {
@@ -135,9 +139,7 @@ export const useMenuStore = create<MenuState>((set, get) => ({
       await apiPut(`/api/menus/${id}`, {
         title: payload.title,
         parentId: payload.parentId ?? null,
-      });
-      console.log(payload.parentId,'ss');
-            
+      });            
       await get().fetchTree();
     } catch (err: any) {
       set({

@@ -24,6 +24,8 @@ export function MenuForm() {
 
   useEffect(() => {
     if (selectedItem) {
+      console.log("SELECTED ITEM", selectedItem);
+
       setTitle(selectedItem.name);
     } else {
       setTitle("");
@@ -39,12 +41,12 @@ export function MenuForm() {
   }
 
   const handleSave = async () => {
-  if (!title.trim()) return;
-  await updateItem(selectedItem.id, { 
-    title,
-    parentId: selectedItem.parentId ?? null,
-  });
-};
+    if (!title.trim()) return;
+    await updateItem(selectedItem.id, {
+      title,
+      parentId: selectedItem.parentId ?? null,
+    });
+  };
 
   const handleDeleteClick = () => {
     setIsDeleteOpen(true);
@@ -66,7 +68,29 @@ export function MenuForm() {
           className="bg-muted/50 border-0 text-sm"
         />
       </div>
-
+      <div className="space-y-2">
+        <Label className="text-sm text-muted-foreground">Depth</Label>
+        <Input
+          value={
+            typeof selectedItem.depth === "number"
+              ? selectedItem.depth <= 0
+                ? "-"
+                : String(selectedItem.depth)
+              : "-"
+          }
+          readOnly
+          disabled
+          className="bg-gray-300 border-0 text-sm"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-sm text-muted-foreground">Parent Data</Label>
+        <Input
+          value={selectedItem.parentData ?? "-"}
+          readOnly
+          className="bg-muted/50 border-0 text-sm"
+        />
+      </div>
       <div className="space-y-2">
         <Label className="text-sm text-muted-foreground">Name</Label>
         <Input
@@ -83,7 +107,7 @@ export function MenuForm() {
           onClick={handleSave}
           disabled={!title.trim()}
         >
-          <Save className="w-10 h-10"/>
+          <Save className="w-10 h-10" />
           Save
         </Button>
 
@@ -93,24 +117,19 @@ export function MenuForm() {
           className="rounded-full bg-red-500 text-white hover:bg-red-600 h-11"
           onClick={handleDeleteClick}
         >
-          <Trash className="w-10 h-10"/>
-        Delete
+          <Trash className="w-10 h-10" />
+          Delete
         </Button>
       </div>
 
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete this menu?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete this menu?</AlertDialogTitle>
             <AlertDialogDescription>
-              Menu{" "}
-              <span className="font-semibold">
-                {selectedItem.name}
-              </span>{" "}
-              akan dihapus, Jika menu ini punya child, mereka juga akan
-              ikut terhapus.
+              Menu <span className="font-semibold">{selectedItem.name}</span>{" "}
+              akan dihapus, Jika menu ini punya child, mereka juga akan ikut
+              terhapus.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
