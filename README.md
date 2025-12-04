@@ -1,11 +1,11 @@
-📘 Fullstack Menu Tree System
+# 📘 Fullstack Menu Tree System
 
-Technical Test – STK
+# Technical Test – STK
 
 A fullstack application that implements a hierarchical menu tree system with unlimited nesting, CRUD operations, search, and drag-and-drop.
 Built using NestJS, Next.js, PostgreSQL, and fully dockerized for easy setup.
 
-🚀 Features
+# 🚀 Features
 # Backend (NestJS + TypeORM + PostgreSQL)
 CRUD menu items
 Unlimited nested menu tree
@@ -32,7 +32,7 @@ docker-compose.yml to run everything in one command
 Persistent Postgres volume
 Environment variables managed cleanly
 
-⚙️ Environment Variables
+# ⚙️ Environment Variables
 # Frontend (frontend/.env)
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 PORT=3000
@@ -52,7 +52,7 @@ docker compose up -d --build
 # Check services
 docker compose ps
 
-▶️ Running Locally (Without Docker)
+# ▶️ Running Locally (Without Docker)
 1️⃣ Backend
 cd backend
 npm install
@@ -65,7 +65,7 @@ npm install
 cp .env.example .env
 npm run dev
 
-🧪 API Endpoints Complete all
+# 🧪 API Endpoints Complete all
 GET    /api/menus              - Get menu tree
 GET    /api/menus/:id          - Get single menu
 POST   /api/menus              - Create menu
@@ -74,22 +74,22 @@ DELETE /api/menus/:id          - Delete menu (recursive)
 PATCH  /api/menus/:id/move     - Move to another parent (optional)
 PATCH  /api/menus/:id/reorder  - Reorder within same level (optional) 
 
-#Swagger UI
+# Swagger UI
 http://localhost:3000/api/docs#/
 
-📌 Technology Choices
-#Backend
+# 📌 Technology Choices
+# Backend
 NestJS + TypeORM → consistency, modular architecture
 PostgreSQL → relational, easy to handle tree data
 Swagger → clear API documentation
-#Frontend
+# Frontend
 Next.js + TypeScript
 TailwindCSS → fast UI development
 Zustand / Context → simple shared state
 Deployment
 Docker → eliminates setup issues, runs anywhere
 
-📦 Deliverables Checklist
+# 📦 Deliverables Checklist
 
 ✔ Fullstack app
 ✔ CRUD + nested menu tree
@@ -100,7 +100,7 @@ Docker → eliminates setup issues, runs anywhere
 ✔ README lengkap
 ✔ .env.example disediakan
 
-✅ How to Test
+# ✅ How to Test
 Clone repo
 Run docker compose
 Open frontend UI (http://localhost:3001)
