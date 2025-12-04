@@ -46,7 +46,7 @@ DB_SSL=false
 
 PORT=3000
 
-🐳 Running With Docker (Recommended)
+# 🐳 Running With Docker (Recommended)
 # Start containers
 docker compose up -d --build
 # Check services
