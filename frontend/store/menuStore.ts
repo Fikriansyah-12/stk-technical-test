@@ -136,6 +136,8 @@ export const useMenuStore = create<MenuState>((set, get) => ({
         title: payload.title,
         parentId: payload.parentId ?? null,
       });
+      console.log(payload.parentId,'ss');
+            
       await get().fetchTree();
     } catch (err: any) {
       set({
